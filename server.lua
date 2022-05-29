@@ -4,15 +4,6 @@ TriggerEvent("getCore",function(core)
     VorpCore = core
 end)
 
-IsTownBanned = function (town)
-	for k,v in pairs(Config.BannedTowns) do
-		if town == GetHashKey(v) then
-			return true
-		end
-	end
-	return false
-end
-
 VorpInv = exports.vorp_inventory:vorp_inventoryApi()
 
 Citizen.CreateThread(function()
