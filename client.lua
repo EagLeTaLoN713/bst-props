@@ -1,7 +1,8 @@
+local town_hash = nil
 
-IsTownBanned = function (town)
+local IsTownBanned()
 	for k,v in pairs(Config.BannedTowns) do
-		if town == GetHashKey(v) then
+		if town_hash == GetHashKey(v) then
 			return true
 		end
 	end
@@ -17,8 +18,22 @@ local wood = 0
 local flint = 0
 local tentlarge = 0
 
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(1)
+
+        -- Set the active zone
+        town_hash = Citizen.InvokeNative(0x43AD8FC02B429D33, x, y, z, 1)
+    end
+end)
+
 RegisterNetEvent('syn:tent')
 AddEventHandler('syn:tent', function()
+    if IsTownBanned() == false then
+        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
+        return
+    end
+
     if tent ~= 0 then
         SetEntityAsMissionEntity(tent)
         DeleteObject(tent)
@@ -38,6 +53,11 @@ end)
 
 RegisterNetEvent('syn:tentlarge')
 AddEventHandler('syn:tentlarge', function()
+    if IsTownBanned() == false then
+        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
+        return
+    end
+
     if tentlarge ~= 0 then
         SetEntityAsMissionEntity(tentlarge)
         DeleteObject(tentlarge)
@@ -57,6 +77,11 @@ end)
 
 RegisterNetEvent('syn:deadwood')
 AddEventHandler('syn:deadwood', function()
+    if IsTownBanned() == false then
+        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
+        return
+    end
+
     if deadwood ~= 0 then
         SetEntityAsMissionEntity(deadwood)
         DeleteObject(deadwood)
@@ -78,6 +103,11 @@ end)
 
 RegisterNetEvent('syn:flint')
 AddEventHandler('syn:flint', function()
+    if IsTownBanned() == false then
+        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
+        return
+    end
+
     if flint ~= 0 then
         SetEntityAsMissionEntity(flint)
         DeleteObject(flint)
@@ -99,6 +129,10 @@ end)
 
 RegisterNetEvent('syn:campfire')
 AddEventHandler('syn:campfire', function()
+    if IsTownBanned() == false then
+        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
+        return
+    end
 
     if campfire ~= 0 then
         SetEntityAsMissionEntity(campfire)
@@ -117,10 +151,13 @@ AddEventHandler('syn:campfire', function()
     campfire = prop
 
 end)
-----------
 
 RegisterNetEvent('syn:bedroll')
 AddEventHandler('syn:bedroll', function()
+    if IsTownBanned() == false then
+        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
+        return
+    end
 
     if bedroll ~= 0 then
         SetEntityAsMissionEntity(bedroll)
@@ -139,6 +176,8 @@ AddEventHandler('syn:bedroll', function()
     bedroll = prop
 
 end)
+
+------------------- Commands to remove/disabled prop -------------------
 RegisterCommand('dtent', function(source, args, rawCommand)
     if tent == 0 then
      --   print("No hay tienda.")
