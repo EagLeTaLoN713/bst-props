@@ -1,6 +1,6 @@
 local town_hash = nil
 
-local IsTownBanned()
+local function IsTownBanned()
 	for k,v in pairs(Config.BannedTowns) do
 		if town_hash == GetHashKey(v) then
 			return true
