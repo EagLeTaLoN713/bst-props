@@ -62,11 +62,14 @@ AddEventHandler("syn:additem", function(item)
 end)
 
 AddEventHandler('syn:additem', function(Item)
-        if Item == 'campfire' then
-          VorpInv.addItem(source, "bedroll", 1)
+        if Item == 'bedroll' then
+          VorpInv.addItem(source, "bedroll", 0)
           TriggerClientEvent("vorp:TipRight", source, "You've got your bedroll back", 5000)
         elseif Item == 'tent' then
-          VorpInv.addItem(source, "tent", 1)
+          VorpInv.addItem(source, "tent", 0)
           TriggerClientEvent("vorp:TipRight", source, "You've got your tent back", 5000)
+        elseif Item == 'tentlarge' then
+            VorpInv.addItem(source, "tentlarge", 0)
+            TriggerClientEvent("vorp:TipRight", source, "You've got your large tent back", 5000)
         end
       end)
