@@ -1,13 +1,6 @@
 local town_hash = nil
 
-local IsTownBanned()
-	for k,v in pairs(Config.BannedTowns) do
-		if town_hash == GetHashKey(v) then
-			return true
-		end
-	end
-	return false
-end
+
 
 local status = false
 
@@ -18,21 +11,11 @@ local wood = 0
 local flint = 0
 local tentlarge = 0
 
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(1)
 
-        -- Set the active zone
-        town_hash = Citizen.InvokeNative(0x43AD8FC02B429D33, x, y, z, 1)
-    end
-end)
 
 RegisterNetEvent('syn:tent')
 AddEventHandler('syn:tent', function()
-    if IsTownBanned() == false then
-        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
-        return
-    end
+   
 
     if tent ~= 0 then
         SetEntityAsMissionEntity(tent)
@@ -53,10 +36,7 @@ end)
 
 RegisterNetEvent('syn:tentlarge')
 AddEventHandler('syn:tentlarge', function()
-    if IsTownBanned() == false then
-        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
-        return
-    end
+    
 
     if tentlarge ~= 0 then
         SetEntityAsMissionEntity(tentlarge)
@@ -75,22 +55,78 @@ AddEventHandler('syn:tentlarge', function()
     tentlarge = prop
 end)
 
+
+local Anims = {
+
+    
+    ["craft"] = {
+        dict = "mech_inventory@crafting@fallbacks",
+        name = "full_craft_and_stow", 
+        flag = 24
+},
+    ["campfire"] = {
+            dict = "script_campfire@lighting_fire@male_male",
+           name = "light_fire_b_p2_male_b", 
+            flag = 24
+	},
+    ["kindling"] = {
+        dict = "script_common@shared_scenarios@kneel@rummage@male_a@idle_a",
+       name = "idle_b", 
+        flag = 24
+},
+    ["bedroll"] = {
+    dict = "script_common@shared_scenarios@kneel@rummage@male_a@idle_a",
+    name = "idle_b", 
+    flag = 24
+},
+    ["crouch"] = {
+        dict = "mech_dynamic@world_player_dynamic_kneel_ground@trans@kneel1@male_a",
+       name = "kneel1_trans_log1", 
+        flag = 24
+},
+  
+}
+
+function PlayAnimation(ped, anim)
+	if not DoesAnimDictExist(anim.dict) then
+		return
+	end
+
+	RequestAnimDict(anim.dict)
+
+	while not HasAnimDictLoaded(anim.dict) do
+		Wait(0)
+	end
+
+	TaskPlayAnim(ped, anim.dict, anim.name, 1.0, 1.0, -1, anim.flag, 0, false, false, false, '', false)
+
+	RemoveAnimDict(anim.dict)
+end
+
 RegisterNetEvent('syn:deadwood')
 AddEventHandler('syn:deadwood', function()
-    if IsTownBanned() == false then
-        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
-        return
-    end
+   
 
     if deadwood ~= 0 then
         SetEntityAsMissionEntity(deadwood)
         DeleteObject(deadwood)
         deadwood = 0
     end
-    local playerPed = PlayerPedId()
-    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 10000, true, false, false, false)
-    exports['progressBars']:startUI(10000, "You're placing some kindling...")
-    Citizen.Wait(10000)
+    local ped = PlayerPedId()
+
+    Citizen.Wait(10)
+    
+   
+    --AttachEntityToEntity(prop, PlayerPedId(), boneIndex, 0.02, 0.01, 0.05, 15.0, 175.0, 0.0, true, true, false, true, 1, true)
+    
+    
+    PlayAnimation(ped, Anims["crouch"])
+    Wait(3000)
+    PlayAnimation(ped, Anims["kindling"])
+    TaskStartScenarioInPlace(PlayerPedId(), GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 12000, false, false, false, false)
+    exports['progressBars']:startUI(Config.CraftTime, "You're placing some kindling...")
+    Citizen.Wait(Config.CraftTime)
+    
     ClearPedTasksImmediately(PlayerPedId())
     local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, -1.55))
     local prop = CreateObject(GetHashKey("p_kindlingpile01x"), x, y, z, true, false, true)
@@ -103,10 +139,7 @@ end)
 
 RegisterNetEvent('syn:flint')
 AddEventHandler('syn:flint', function()
-    if IsTownBanned() == false then
-        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
-        return
-    end
+   
 
     if flint ~= 0 then
         SetEntityAsMissionEntity(flint)
@@ -115,10 +148,21 @@ AddEventHandler('syn:flint', function()
         flint = 0
         
     end
-    local playerPed = PlayerPedId()
-    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 10000, true, false, false, false)
-    exports['progressBars']:startUI(10000, "You're starting a fire...")
-    Citizen.Wait(10000)
+    local ped = PlayerPedId()
+
+    Citizen.Wait(10)
+    
+   
+    --AttachEntityToEntity(prop, PlayerPedId(), boneIndex, 0.02, 0.01, 0.05, 15.0, 175.0, 0.0, true, true, false, true, 1, true)
+    
+    
+    PlayAnimation(ped, Anims["crouch"])
+    Wait(3000)
+    PlayAnimation(ped, Anims["campfire"])
+    TaskStartScenarioInPlace(PlayerPedId(), GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 12000, false, false, false, false)
+    exports['progressBars']:startUI(Config.CraftTime, "You're lighting the kindling...")
+    Citizen.Wait(Config.CraftTime)
+    
     ClearPedTasksImmediately(PlayerPedId())
     local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, -1.55))
     local prop = CreateObject(GetHashKey("p_campfirefresh01x"), x, y, z, true, false, true)
@@ -127,54 +171,74 @@ AddEventHandler('syn:flint', function()
     flint = prop
 end)
 
-RegisterNetEvent('syn:campfire')
+-----DISABLED IF YOU USE bcc-crafting or syn_crafting
+--[[RegisterNetEvent('syn:campfire')
 AddEventHandler('syn:campfire', function()
-    if IsTownBanned() == false then
-        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
-        return
-    end
+    
 
     if campfire ~= 0 then
         SetEntityAsMissionEntity(campfire)
         DeleteObject(campfire)
         campfire = 0
     end
-    local playerPed = PlayerPedId()
-    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 30000, true, false, false, false)
-    exports['progressBars']:startUI(30000, "You're placing a campfire...")
-    Citizen.Wait(30000)
+    local ped = PlayerPedId()
+    
+    Citizen.InvokeNative(0xFCCC886EDE3C63EC, ped, 2, 1)
+    Citizen.Wait(10)
+    
+   
+    --AttachEntityToEntity(prop, PlayerPedId(), boneIndex, 0.02, 0.01, 0.05, 15.0, 175.0, 0.0, true, true, false, true, 1, true)
+    
+    
+    PlayAnimation(ped, Anims["crouch"])
+    Wait(3000)
+    PlayAnimation(ped, Anims["campfire"])
+    TaskStartScenarioInPlace(PlayerPedId(), GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 12000, false, false, false, false)
+    exports['progressBars']:startUI(Config.CraftTime, "Placing your Campfire...")
+    Citizen.Wait(Config.CraftTime)
+    
     ClearPedTasksImmediately(PlayerPedId())
-    local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 2.0, -1.55))
-    local prop = CreateObject(GetHashKey("p_campfire05x"), x, y, z, true, false, true)
+    local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, -1.55))
+    
+    local prop = CreateObject(GetHashKey(Config.PlaceableCampfire), x, y, z, true, false, true)
     SetEntityHeading(prop, GetEntityHeading(PlayerPedId()))
     PlaceObjectOnGroundProperly(prop)
     campfire = prop
 
-end)
+end)]]
 
 RegisterNetEvent('syn:bedroll')
 AddEventHandler('syn:bedroll', function()
-    if IsTownBanned() == false then
-        TriggerEvent("vorp:TipRight", "Restricted Area", 7000)
-        return
-    end
+    
 
     if bedroll ~= 0 then
         SetEntityAsMissionEntity(bedroll)
         DeleteObject(bedroll)
         bedroll = 0
+        local ped = PlayerPedId()
+    
+        Citizen.InvokeNative(0xFCCC886EDE3C63EC, ped, 2, 1)
+        Citizen.Wait(10)
+        
+       
+        --AttachEntityToEntity(prop, PlayerPedId(), boneIndex, 0.02, 0.01, 0.05, 15.0, 175.0, 0.0, true, true, false, true, 1, true)
+        
+        
+        PlayAnimation(ped, Anims["crouch"])
+        Wait(3000)
+        PlayAnimation(ped, Anims["kindling"])
+        TaskStartScenarioInPlace(PlayerPedId(), GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 12000, false, false, false, false)
+        exports['progressBars']:startUI(Config.CraftTime, "Placing your BedRoll...")
+        Citizen.Wait(Config.CraftTime)
+        
+        ClearPedTasksImmediately(PlayerPedId())
+        local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 1.0, -1.55))
+        
+        local prop = CreateObject(GetHashKey(Config.PlaceableCampfire), x, y, z, true, false, true)
+        SetEntityHeading(prop, GetEntityHeading(PlayerPedId()))
+        PlaceObjectOnGroundProperly(prop)
+        bedroll = prop
     end
-    local playerPed = PlayerPedId()
-    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_CROUCH_INSPECT'), 5000, true, false, false, false)
-    exports['progressBars']:startUI(5000, "You're placing your bedroll...")
-    Citizen.Wait(5000)
-    ClearPedTasksImmediately(PlayerPedId())
-    local x,y,z = table.unpack(GetOffsetFromEntityInWorldCoords(PlayerPedId(), 0.0, 2.0, -1.55))
-    local prop = CreateObject(GetHashKey("p_bedindian01x"), x, y, z, true, false, true)
-    SetEntityHeading(prop, GetEntityHeading(PlayerPedId()))
-    PlaceObjectOnGroundProperly(prop)
-    bedroll = prop
-
 end)
 
 ------------------- Commands to remove/disabled prop -------------------
@@ -251,7 +315,7 @@ RegisterCommand('dcampfire', function(source, args, rawCommand)
         DeleteObject(campfire)
         campfire = 0
        
-		TriggerServerEvent('syn:additem', "campfire")
+		
         
     end
 end, false)
